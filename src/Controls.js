@@ -45,7 +45,9 @@ export default class Controls {
             this.addParticles(e, 50)
         }
     }
-
+    addTarget(e) {
+        
+    }
     addParticles(e) {
 
         let count = this.count
@@ -86,9 +88,9 @@ export default class Controls {
         let id;
         for (let i = 0; i < max; i++) {
             id = i * 4
-            arr[id++] = Math.random()
-            arr[id++] = Math.random()
-            arr[id++] = Math.random()
+            arr[id++] = 0.5 // Math.random(); // y
+            arr[id++] = 0.5 // x
+            arr[id++] = Math.random(); // angle
         }
         this.renderer.copyTextureToTexture(new Vector2(0, 0), tex, tex);
         this.renderer.copyTextureToTexture(new Vector2(0, 0), tex, this.agents.next.texture);

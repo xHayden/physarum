@@ -1,6 +1,7 @@
 
 uniform sampler2D input_texture;
 uniform sampler2D data;
+uniform sampler2D heightmap_texture;
 
 uniform vec2 resolution;
 uniform float time;
@@ -8,6 +9,7 @@ uniform float sa;
 uniform float ra;
 uniform float so;
 uniform float ss;
+uniform float hl;
 
 
 const float PI  = 3.14159265358979323846264;// PI
@@ -27,9 +29,20 @@ float getTrailValue(vec2 uv){
     return texture2D(data,fract(uv)).g;
 }
 
+bool checkHeightTooLarge(vec2 src, vec2 val) {
+    // it is at src.xy
+    // trying to go to val.xy
+    // should be checking for change, not limit. Change this.
+    // hl is height_limit. 0.28
+
+    vec4 new_loc = texture2D(heightmap_texture, fract(val)); // uv is the new location
+    vec4 old_loc = texture2D(heightmap_texture, fract(src)); // uv is the new location
+    vec4 diff = abs(new_loc - old_loc);
+    return (diff.r < (hl/1000.));
+}
+
 varying vec2 vUv;
 void main(){
-    
     //converts degree to radians (should be done on the CPU)
     float SA = sa * RAD;
     float RA = ra * RAD;
@@ -59,12 +72,12 @@ void main(){
 
     // original implement not very parallel friendly
     // TODO remove the conditions
-    if( F > FL && F > FR ){
-    }else if( F<FL && F<FR ){
-        if( rand(val.xy) > .5 ){
-            angle +=RA;
-        }else{
-            angle -=RA;
+    if ( F > FL && F > FR ) {
+    } else if ( F < FL && F < FR ) {
+        if ( rand(val.xy) > .5 ) {
+            angle += RA;
+        } else {
+            angle -= RA;
         }
     }else if( FL<FR){
             angle+=RA;
@@ -76,10 +89,10 @@ void main(){
     val.xy += offset;
 
     //condition from the paper : move only if the destination is free
-    // if( getDataValue(val.xy) == 1. ){
-    //     val.xy = src.xy;
-    //     angle = rand(val.xy+time) * PI2;
-    // }
+    if( getDataValue(val.xy) == 1. || checkHeightTooLarge(src.xy, val.xy) ){ // or the height is too large, i.e. the pixel on the texture map is too dark
+        val.xy = src.xy;
+        angle = rand(val.xy+time) * PI2;
+    }
 
     //warps the coordinates so they remains in the [0-1] interval
     val.xy = fract( val.xy );
@@ -88,5 +101,6 @@ void main(){
     val.z = ( angle / PI2 );
     
     gl_FragColor = val;
-
+    
+    // gl_FragColor = vec4(1.0,0.0,1.0,1.0); // texture2D(heightmap_texture, vUv);
 }

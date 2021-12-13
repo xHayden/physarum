@@ -10,6 +10,9 @@ import {
     PlaneBufferGeometry,
     ShaderMaterial,
     Vector2,
+    TextureLoader,
+    Sprite,
+    MeshBasicMaterial,
 } from 'three';
 import PingpongRenderTarget from "./src/PingpongRenderTarget"
 import RenderTarget from "./src/RenderTarget"
@@ -35,7 +38,7 @@ camera.position.z = 1
 // 1 init buffers 
 //////////////////////////////////////
 
-let size = 512 // particles amount = ( size ^ 2 )
+let size = 1024 // particles amount = ( size ^ 2 )
 
 let count = size * size;
 let pos = new Float32Array(count * 3)
@@ -84,14 +87,23 @@ let trails = new PingpongRenderTarget(w, h, diffuse_decay)
 // 3 agents 
 //////////////////////////////////////
 
-//moves agents around 
+//moves agents around
+const heightmapTexture = new TextureLoader().load( "heightmaps/georgia.png" );
+
+const heightmapMaterial = new MeshBasicMaterial( {
+    map: heightmapTexture
+ } );
+//var sprite = new Sprite( heightmapMaterial );
+
 let update_agents = new ShaderMaterial({
     uniforms: {
         data: { value: null },
         sa: { value: 2 },
         ra: { value: 4 },
         so: { value: 12 },
-        ss: { value: 1.1 }
+        ss: { value: 1.1 },
+        heightmap_texture: { value: heightmapTexture },
+        hl: { value: 0.28 }, 
     },
     vertexShader: require('./src/glsl/quad_vs.glsl'),
     fragmentShader: require('./src/glsl/update_agents_fs.glsl')
@@ -118,6 +130,9 @@ let postprocess = new ShaderMaterial({
     uniforms: {
         data: {
             value: null
+        },
+        heightmapTexture: {
+            value: heightmapTexture
         }
     },
     vertexShader: require('./src/glsl/quad_vs.glsl'),
@@ -127,6 +142,9 @@ let postprocess_mesh = new Mesh(new PlaneBufferGeometry(), postprocess)
 postprocess_mesh.scale.set(w, h, 1)
 scene.add(postprocess_mesh)
 
+var heightmapMesh = new Mesh(new PlaneBufferGeometry(), heightmapMaterial);
+//heightmapMesh.scale.set(w, h, 1)
+scene.add(heightmapMesh);
 
 // 6 interactive controls 
 //////////////////////////////////////
@@ -180,6 +198,7 @@ gui.add(update_agents.uniforms.sa, "value", 1, 90, .1).name("sa")
 gui.add(update_agents.uniforms.ra, "value", 1, 90, .1).name("ra")
 gui.add(update_agents.uniforms.so, "value", 1, 90, .1).name("so")
 gui.add(update_agents.uniforms.ss, "value", 0.1, 10, .1).name("ss")
+gui.add(update_agents.uniforms.hl, "value", 0.01, 4, .001).name("hl")
 gui.add(controls, "random")
 gui.add(controls, "radius",.001,.25)
 gui.add(controls, "count", 1,size*size, 1)

@@ -27,6 +27,7 @@ export default class PingpongRenderTarget {
         }
 
         let rt_a = new WebGLRenderTarget(this.width, this.height, options)
+        // rt_a.texture ends up being the texture passed as input
         let rt_b = new WebGLRenderTarget(this.width, this.height, options)
 
         this.rt_a = rt_a
@@ -44,7 +45,8 @@ export default class PingpongRenderTarget {
         rt_b.texture = tex;
 
         this.material = material        
-        this.material.uniforms["input_texture"] = {value: this.texture};
+        this.material.uniforms["input_texture"] = {value: this.texture}; // Place for input_texture
+        //this.material.uniforms["heightmap_texture"] = {value: this.heightmap_texture};
         this.material.uniforms["resolution"] = {value : new Vector2(w,h)};
         this.material.uniforms["time"] = {value : 0};
         this.material.transparent = true;
