@@ -46,7 +46,15 @@ export default class Controls {
         }
     }
     addTarget(e) {
-        
+        /* 
+        Possible idea: Use .b on the data values of the targets to determine if it should move or not
+        Create targets with .b set to 1, meaning they cannot move at the mouse cursor.
+
+        Not an option, I think.
+
+        Problem remains that I need to add in a stronger chemoattractant for particles that interact with the food.
+        Done in diffuse_decay w/ a different accumulator?        
+        */
     }
     addParticles(e) {
 

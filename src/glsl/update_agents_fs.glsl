@@ -21,12 +21,14 @@ float rand(in vec2 coordinate){
     return fract(tan(distance(coordinate*(time+PHI),vec2(PHI,PI*.1)))*SQ2);
 }
 
+// data is the trials texture
+
 float getDataValue(vec2 uv){
-    return texture2D(data,fract( uv ) ).r;
+    return texture2D(data,fract( uv ) ).r; // .r is the 1 when something is in the space?
 }
 
 float getTrailValue(vec2 uv){
-    return texture2D(data,fract(uv)).g;
+    return texture2D(data,fract(uv)).g; // .g is the trail value at a point
 }
 
 bool checkHeightTooLarge(vec2 src, vec2 val) {

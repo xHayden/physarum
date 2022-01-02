@@ -38,7 +38,7 @@ camera.position.z = 1
 // 1 init buffers 
 //////////////////////////////////////
 
-let size = 1024 // particles amount = ( size ^ 2 )
+let size = 1440 // particles amount = ( size ^ 2 )
 
 let count = size * size;
 let pos = new Float32Array(count * 3)

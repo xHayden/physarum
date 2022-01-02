@@ -28,6 +28,7 @@ export default class PingpongRenderTarget {
 
         let rt_a = new WebGLRenderTarget(this.width, this.height, options)
         // rt_a.texture ends up being the texture passed as input
+        // the texture is what ends up being data
         let rt_b = new WebGLRenderTarget(this.width, this.height, options)
 
         this.rt_a = rt_a
