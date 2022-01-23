@@ -1,6 +1,7 @@
 import {
     NearestFilter,
     RGBAFormat,
+    RGBFormat,
     FloatType,
     WebGLRenderTarget,
     Scene,
@@ -13,8 +14,13 @@ import {
 
 export default class PingpongRenderTarget {
 
-    constructor(width, height, material, data = null) { // data is ptexdata
-
+    constructor(width, height, material, data = null, food = null) { // data is ptexdata
+        if(data === null) {
+            this.textureName = "diffuse_decay"
+        }
+        else {
+            this.textureName = "update_agents"
+        }
         this.width = width,
         this.height = height;
         let w = width;
@@ -37,8 +43,12 @@ export default class PingpongRenderTarget {
         this.next = this.rt_b
 
         if( data == null){
-            data = new Float32Array(w*h*4)
+            data = new Float32Array(w*h*4) // if !diffuse_decay
         }
+        if (food == null) {
+            food = new Float32Array(6) // if !food
+        }
+        let foodTex = new DataTexture(food, w, h, RGBFormat, FloatType)
 
         let tex = new DataTexture(data, w, h, RGBAFormat, FloatType)
         tex.needsUpdate = true;
@@ -46,10 +56,12 @@ export default class PingpongRenderTarget {
         rt_b.texture = tex;
 
         this.material = material        
-        this.material.uniforms["input_texture"] = {value: this.texture}; // Place for input_texture
-        //this.material.uniforms["heightmap_texture"] = {value: this.heightmap_texture};
+        this.material.uniforms["input_texture"] = {value: this.texture}; // Place for input_texture, coming from data, ptexdata
+        this.material.uniforms["food_texture"] = {value : foodTex };
+        //this.material.uniforms["heightmap_texture"] = {value: this.heightmap_texture}; // my naive self thinking that this was relevant for this shader
         this.material.uniforms["resolution"] = {value : new Vector2(w,h)};
         this.material.uniforms["time"] = {value : 0};
+        
         this.material.transparent = true;
 
         this.mesh = new Mesh(new PlaneBufferGeometry(), this.material)
@@ -73,6 +85,9 @@ export default class PingpongRenderTarget {
         this.mesh.visible = true;
         
         this.material.uniforms.input_texture.value = this.texture;
+        if (this.textureName === "diffuse_decay") {
+            //console.log(this.texture)
+        }
         this.material.uniforms.time.value = time;
 
         renderer.setSize( this.width, this.height )

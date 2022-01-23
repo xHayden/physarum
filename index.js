@@ -13,6 +13,7 @@ import {
     TextureLoader,
     Sprite,
     MeshBasicMaterial,
+    RepeatWrapping,
 } from 'three';
 import PingpongRenderTarget from "./src/PingpongRenderTarget"
 import RenderTarget from "./src/RenderTarget"
@@ -44,6 +45,7 @@ let count = size * size;
 let pos = new Float32Array(count * 3)
 let uvs = new Float32Array(count * 2)
 let ptexdata = new Float32Array(count * 4)
+// let food = new Float32Array(count * 3); // value for if food, and concentration
 
 let id = 0, u,v;
 for (let i = 0; i < count; i++) {
@@ -65,9 +67,9 @@ for (let i = 0; i < count; i++) {
     ptexdata[id++] = Math.random() // normalized pos y
     ptexdata[id++] = Math.random() // normalized angle
     ptexdata[id++] = 1
-    
-
 }
+
+let foodNodes = [0, 0, 1, w, h, 1] // (0, 0) and (w, h) are the corners of the screen 1 is concentration.
 
 // 2 data & trails 
 //////////////////////////////////////
@@ -78,10 +80,11 @@ let diffuse_decay = new ShaderMaterial({
         points: { value: null },
         decay: {value: .9 }        
     },
+    opacity: 0.5,
     vertexShader: require('./src/glsl/quad_vs.glsl'),
     fragmentShader: require('./src/glsl/diffuse_decay_fs.glsl')
 })
-let trails = new PingpongRenderTarget(w, h, diffuse_decay)
+let trails = new PingpongRenderTarget(w, h, diffuse_decay, null, foodNodes)
 
 
 // 3 agents 
@@ -89,24 +92,29 @@ let trails = new PingpongRenderTarget(w, h, diffuse_decay)
 
 //moves agents around
 const heightmapTexture = new TextureLoader().load( "heightmaps/georgia.png" );
+heightmapTexture.wrapT = RepeatWrapping;
+heightmapTexture.repeat.y = - 1;
 
 const heightmapMaterial = new MeshBasicMaterial( {
-    map: heightmapTexture
+    map: heightmapTexture,
+    transparent: true,
+    opacity: 0.6,
  } );
 //var sprite = new Sprite( heightmapMaterial );
 
 let update_agents = new ShaderMaterial({
     uniforms: {
         data: { value: null },
-        sa: { value: 2 },
-        ra: { value: 4 },
-        so: { value: 12 },
-        ss: { value: 1.1 },
+        sa: { value: 2 }, // sensor angle
+        ra: { value: 4 }, // rotation angle
+        so: { value: 12 }, // look ahead distance
+        ss: { value: 1.1 }, // step size (speed)
         heightmap_texture: { value: heightmapTexture },
-        hl: { value: 0.28 }, 
+        hl: { value: 0.28 }, // height level
     },
     vertexShader: require('./src/glsl/quad_vs.glsl'),
-    fragmentShader: require('./src/glsl/update_agents_fs.glsl')
+    fragmentShader: require('./src/glsl/update_agents_fs.glsl'),
+    opacity: 0.5
 })
 let agents = new PingpongRenderTarget(size, size, update_agents, ptexdata)
 
@@ -135,15 +143,23 @@ let postprocess = new ShaderMaterial({
             value: heightmapTexture
         }
     },
+    opacity: 0.5,
     vertexShader: require('./src/glsl/quad_vs.glsl'),
     fragmentShader: require('./src/glsl/postprocess_fs.glsl')
 })
+let diffuse_decay_mesh = new Mesh(new PlaneBufferGeometry(), diffuse_decay);
 let postprocess_mesh = new Mesh(new PlaneBufferGeometry(), postprocess)
+var heightmapMesh = new Mesh(new PlaneBufferGeometry(), heightmapMaterial);
+heightmapMesh.scale.set(w, h, 1)
 postprocess_mesh.scale.set(w, h, 1)
+heightmapMesh.renderOrder = 1;
+postprocess_mesh.renderOrder = 0;
+//scene.add(diffuse_decay_mesh)
+
 scene.add(postprocess_mesh)
 
-var heightmapMesh = new Mesh(new PlaneBufferGeometry(), heightmapMaterial);
-//heightmapMesh.scale.set(w, h, 1)
+
+//console.log(heightmapMesh)
 scene.add(heightmapMesh);
 
 // 6 interactive controls 
@@ -158,7 +174,7 @@ controls.count = ~~(size * size * .05)
 let triggered = false;
 function raf(){
     if (time > 2 && !triggered) {
-        console.log(uvs);
+        //console.log(uvs);
         triggered = true;
     //     let values = {};
     //     for (let i of render.texture.image.data) {
