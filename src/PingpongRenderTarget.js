@@ -13,7 +13,7 @@ import {
 
 export default class PingpongRenderTarget {
 
-    constructor(width, height, material, data = null) {
+    constructor(width, height, material, data = null) { // data is ptexdata
 
         this.width = width,
         this.height = height;

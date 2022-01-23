@@ -1,6 +1,6 @@
 
 uniform sampler2D input_texture;
-uniform sampler2D data;
+uniform sampler2D data; // trails.texture
 uniform sampler2D heightmap_texture;
 
 uniform vec2 resolution;

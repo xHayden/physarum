@@ -119,7 +119,7 @@ let render_agents = new ShaderMaterial({
     vertexShader: require('./src/glsl/render_agents_vs.glsl'),
     fragmentShader: require('./src/glsl/render_agents_fs.glsl')
 })
-let render = new RenderTarget(w,h,render_agents, pos, uvs)
+let render = new RenderTarget(w,h,render_agents, pos, uvs) // no data is sent
 
 
 // 5 post process
@@ -155,8 +155,17 @@ controls.count = ~~(size * size * .05)
 // animation loop 
 //////////////////////////////////////
 
+let triggered = false;
 function raf(){
-    
+    if (time > 2 && !triggered) {
+        console.log(uvs);
+        triggered = true;
+    //     let values = {};
+    //     for (let i of render.texture.image.data) {
+    //         values[i] = true
+    //     }
+    //     console.log(render.texture.image.data.length)
+    }
     requestAnimationFrame(raf)
 
     time = (Date.now() - start) * 0.001
@@ -202,4 +211,3 @@ gui.add(update_agents.uniforms.hl, "value", 0.01, 4, .001).name("hl")
 gui.add(controls, "random")
 gui.add(controls, "radius",.001,.25)
 gui.add(controls, "count", 1,size*size, 1)
-

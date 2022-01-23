@@ -1,14 +1,14 @@
 
-uniform sampler2D data;
+uniform sampler2D data; // trails.texture
 uniform sampler2D heightmap_texture;
 varying vec2 vUv;
 void main(){
 
     vec4 src = texture2D(data, vUv);
-    vec2 maxImageSize = vec2(1024, 1024);
-    vec2 minImageSize = vec2(0, 0);
-    vec4 max_location = texture2D(heightmap_texture, fract(maxImageSize));
-    vec4 min_location = texture2D(heightmap_texture, fract(minImageSize));
+    // vec2 maxImageSize = vec2(1024, 1024);
+    // vec2 minImageSize = vec2(0, 0);
+    // vec4 max_location = texture2D(heightmap_texture, fract(maxImageSize));
+    // vec4 min_location = texture2D(heightmap_texture, fract(minImageSize));
     
     gl_FragColor = vec4(src.ggg, 1.);
     //vec4 src = texture2D(heightmap_texture, vUv);
