@@ -48,9 +48,16 @@ export default class PingpongRenderTarget {
         if (food == null) {
             food = new Float32Array(6) // if !food
         }
-        let foodTex = new DataTexture(food, w, h, RGBFormat, FloatType)
 
+        // console.log(foodData)
+        // console.log(debugObject)
+
+
+
+        let foodTex = new DataTexture(food, w, h, RGBFormat, FloatType)
+        //console.log(foodTex);
         let tex = new DataTexture(data, w, h, RGBAFormat, FloatType)
+        //console.log(tex)
         tex.needsUpdate = true;
         rt_a.texture = tex.clone()
         rt_b.texture = tex;
