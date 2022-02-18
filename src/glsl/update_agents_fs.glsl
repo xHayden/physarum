@@ -92,7 +92,7 @@ void main(){
 
     //condition from the paper : move only if the destination is free
     // || checkHeightTooLarge(src.xy, val.xy)
-    if( getDataValue(val.xy) == 1. ) { // or the height is too large, i.e. the pixel on the texture map is too dark
+    if( getDataValue(val.xy) == 1. || checkHeightTooLarge(src.xy, val.xy) ) { // or the height is too large, i.e. the pixel on the texture map is too dark
         val.xy = src.xy;
         angle = rand(val.xy+time) * PI2;
     }

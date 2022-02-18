@@ -54,7 +54,7 @@ export default class PingpongRenderTarget {
 
 
 
-        let foodTex = new DataTexture(food, w, h, RGBFormat, FloatType)
+        // let foodTex = new DataTexture(food, w, h, RGBFormat, FloatType)
         //console.log(foodTex);
         let tex = new DataTexture(data, w, h, RGBAFormat, FloatType)
         //console.log(tex)
@@ -64,7 +64,7 @@ export default class PingpongRenderTarget {
 
         this.material = material        
         this.material.uniforms["input_texture"] = {value: this.texture}; // Place for input_texture, coming from data, ptexdata
-        this.material.uniforms["food_texture"] = {value : foodTex };
+        // this.material.uniforms["food_texture"] = {value : foodTex };
         //this.material.uniforms["heightmap_texture"] = {value: this.heightmap_texture}; // my naive self thinking that this was relevant for this shader
         this.material.uniforms["resolution"] = {value : new Vector2(w,h)};
         this.material.uniforms["time"] = {value : 0};
@@ -92,7 +92,7 @@ export default class PingpongRenderTarget {
         this.mesh.visible = true;
         
         this.material.uniforms.input_texture.value = this.texture;
-        if (this.textureName === "diffuse_decay") {
+        if (this.textureName !== "diffuse_decay") {
             //console.log(this.texture)
         }
         this.material.uniforms.time.value = time;
@@ -107,6 +107,7 @@ export default class PingpongRenderTarget {
 
     get texture () {
         return this.current.texture
+        
     }
 
 }

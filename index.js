@@ -70,9 +70,12 @@ for (let i = 0; i < count; i++) {
     ptexdata[id++] = 1
 }
 
-let foodNodes = [0, 0, 1, 1, 1, 1] // (0, 0) and (w, h) are the corners of the screen 1 is concentration.
+let foodNodes = [
+                1, 0, 1, 1, 
+                0, 1, 1, 1
+            ] // (0, 0) and (w, h) are the corners of the screen 1 is concentration.
 // these values are normalized so its actually 0 0 and 1 1
-let foodData = new Float32Array(w*h*3);
+let foodData = new Float32Array(w*h*4);
 // x, y, foodValue
 let y = -1;
 let debugObject = {
@@ -83,33 +86,57 @@ let debugObject = {
     foodY: 0,
     foodValue: 0
 }
-for (let i = 0; i < foodData.length; i+=3) {
-    if ((i/3) % (w) == 0) {
+console.log(uvs.length / 3)
+console.log(foodData.length / 4)
+for (let i = 0; i < foodData.length; i+=4) {
+    // foodData[i] = uvs[(i/4)];
+    // foodData[i+1] = uvs[(i/4) + 1];
+    if ((i/4) % (w) == 0) {
         y++;
     }
-    foodData[i] = ((i/3) - (y*w)) / w;
+    foodData[i] = ((i/4) - (y*w)) / w;
     foodData[i + 1] = y / h;
 }
-for (let i = 0; i < foodNodes.length/3; i++) {
-    let foodX = foodNodes[i*3];
-    let foodY = foodNodes[i*3+1];
-    let foodStrength = foodNodes[i*3+2];
-    for (let j = 0; j < foodData.length/3; j++) {
-        let x = foodData[j*3];
-        let y = foodData[j*3+1]; // these are normalized
+// it seems like uvs only render at the location of the particles
+// we need to render food everywhere, so is this not an option?
+let debugObjects = [];
+for (let i = 0; i < foodNodes.length/4; i++) {
+    let foodX = foodNodes[i*4];
+    let foodY = foodNodes[i*4+1];
+    let foodStrength = foodNodes[i*4+2];
+    let radius = 1.4;
+    let steepness = 3;
+    for (let j = 0; j < foodData.length/4; j++) {
+        debugObject = {}
+        let x = foodData[j*4];
+        let y = foodData[j*4+1]; // these are normalized
         let distanceBetween = Math.abs(Math.sqrt(Math.pow(foodX - x, 2) + Math.pow(foodY - y, 2)));
-        let foodValue = Math.abs(foodStrength * (1 - distanceBetween));
-        foodData[j*3+2]+=foodValue; // this could be wrong
+        let foodValue;
+        if (distanceBetween < radius) {
+            let percentageOfMaximumDistance = (1.4143 - (distanceBetween))/1.4143;
+            foodValue = Math.sin(Math.PI/2 * Math.pow(percentageOfMaximumDistance, steepness))
+        }
+        else {
+            foodValue = 0;
+        }
+        foodData[j*4+2] += (foodStrength) * foodValue; // this could be wrong
         debugObject.x = x;
         debugObject.y = y;
         debugObject.distanceBetween = distanceBetween;
         debugObject.foodX = foodX;
         debugObject.foodY = foodY;
         debugObject.foodValue = foodValue;
+        debugObject.foodStrength = foodStrength;
+        let alpha = 1;
+        foodData[j * 4 + 3] = alpha;
+        debugObjects.push(debugObject);
     }
 }
-
-
+console.log(debugObjects[0])
+let foodTex = new DataTexture(foodData, w, h, RGBAFormat, FloatType);
+foodTex.needsUpdate = true;
+console.log(foodData)
+// x, y, foodValue accum, alpha
 
 // 2 data & trails 
 //////////////////////////////////////
@@ -117,8 +144,15 @@ for (let i = 0; i < foodNodes.length/3; i++) {
 //performs the diffusion and decay 
 let diffuse_decay = new ShaderMaterial({
     uniforms: {
-        points: { value: null },
-        decay: {value: .9 }        
+        points: { 
+            value: null 
+        },
+        decay: {
+            value: .9 
+        },
+        food_texture: {
+            value: foodTex
+        }
     },
     opacity: 0.5,
     vertexShader: require('./src/glsl/quad_vs.glsl'),
@@ -174,8 +208,6 @@ let render = new RenderTarget(w,h,render_agents, pos, uvs) // no data is sent
 //////////////////////////////////////
 
 //post process the result of the trails (render the trails as greyscale)
-let foodTex = new DataTexture(foodData, w, h, RGBFormat, FloatType);
-console.log(foodTex);
 let postprocess = new ShaderMaterial({
     uniforms: {
         data: {
@@ -185,20 +217,36 @@ let postprocess = new ShaderMaterial({
             value: heightmapTexture
         },
         food_texture: {
-            value: new DataTexture(foodData, w, h, RGBFormat, FloatType)
+            value: foodTex
         }
     },
-    opacity: 0.5,
+    transparent: true,
+    opacity: 1,
     vertexShader: require('./src/glsl/quad_vs.glsl'),
-    fragmentShader: require('./src/glsl/postprocess_fs.glsl')
+    fragmentShader: require('./src/glsl/postprocess_fs.glsl'),
 });
-console.log(foodData)
+
+let foodMaterial = new ShaderMaterial({
+    uniforms: {
+        food_texture: {
+            value: foodTex
+        }
+    },
+    opacity: 0.1,
+    transparent: true,
+    vertexShader: require('./src/glsl/food_vs.glsl'),
+    fragmentShader: require('./src/glsl/food_fs.glsl'),
+})
+
 let diffuse_decay_mesh = new Mesh(new PlaneBufferGeometry(), diffuse_decay);
 let postprocess_mesh = new Mesh(new PlaneBufferGeometry(), postprocess)
 var heightmapMesh = new Mesh(new PlaneBufferGeometry(), heightmapMaterial);
+var foodMesh = new Mesh(new PlaneBufferGeometry(), foodMaterial);
 heightmapMesh.scale.set(w, h, 1)
 postprocess_mesh.scale.set(w, h, 1)
-heightmapMesh.renderOrder = 1;
+foodMesh.scale.set(w, h, 1);
+foodMesh.renderOrder = 1;
+heightmapMesh.renderOrder = 2;
 postprocess_mesh.renderOrder = 0;
 //scene.add(diffuse_decay_mesh)
 
@@ -208,6 +256,7 @@ scene.add(postprocess_mesh)
 //console.log(heightmapMesh)
 scene.add(heightmapMesh);
 
+//scene.add(foodMesh);
 // 6 interactive controls 
 //////////////////////////////////////
 let controls = new Controls( renderer, agents )

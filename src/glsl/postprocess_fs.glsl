@@ -12,7 +12,7 @@ void main(){
     // vec4 max_location = texture2D(heightmap_texture, fract(maxImageSize));
     // vec4 min_location = texture2D(heightmap_texture, fract(minImageSize));
     
-    gl_FragColor = vec4(src.g, food.b, 0.0, 1.); // ggg
+    gl_FragColor = vec4(src.g, src.g, 0.0, 1.); // ggg
     //gl_FragColor = vec4(1., 1., src., 1.);
     //vec4 src = texture2D(heightmap_texture, vUv);
     //gl_FragColor = src;
