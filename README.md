@@ -3,6 +3,7 @@ a slime mold simulation
 
 This particular fork is a modified version that can map over terrain and use food sources for attraction.
 Example with pathfinding over Georgia (US State): 
+
 ![Georgia Demo Image](https://img.hayden.gg/3832bf5dafd9d29c6244f470a8df4a30.png)
 
 Original README:
