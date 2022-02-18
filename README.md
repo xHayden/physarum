@@ -1,6 +1,9 @@
 # physarum
 a slime mold simulation 
 
+This particular fork is a modified version that can map over terrain and use food sources for attraction.
+
+Original README:
 
 inspired by this [amazing work ](https://www.sagejenson.com/physarum)
 
