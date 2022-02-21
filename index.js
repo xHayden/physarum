@@ -335,6 +335,18 @@ let heightmaps = {
     balkans: "heightmaps/balkans.png",
     sanfranscisco_bay: "heightmaps/sanfranscisco_bay.png",
     germany: "heightmaps/germany.png",
+    manaus_amazon: "heightmaps/amazon_manaus.png",
+    japan: "heightmaps/japan.png",
+    australia_melbourne: "heightmaps/australia_melbourne.png",
+    brazil_rio: "heightmaps/brazil_rio.png",
+    france_paris: "heightmaps/france_paris.png",
+    london: "heightmaps/london.png",
+    new_york_city: "heightmaps/new_york_city.png",
+    spain_madrid: "heightmaps/spain_madrid.png",
+    texas_houston: "heightmaps/texas_houston.png",
+    northern_ireland: "heightmaps/northern_ireland.png",
+    brunei: "heightmaps/brunei.png",
+    singapore: "heightmaps/singapore.png",
 }
 gui.add(heightmapOption, "heightmap", heightmaps).name("Heightmap").onChange((value) => {
     let heightmapTexture = new TextureLoader().load( value );
