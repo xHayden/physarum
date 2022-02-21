@@ -184,7 +184,7 @@ let update_agents = new ShaderMaterial({
         so: { value: 12 }, // look ahead distance
         ss: { value: 1.1 }, // step size (speed)
         heightmap_texture: { value: heightmapTexture },
-        hl: { value: 0.28 }, // height level
+        hl: { value: 0.0005 }, // height level
     },
     vertexShader: require('./src/glsl/quad_vs.glsl'),
     fragmentShader: require('./src/glsl/update_agents_fs.glsl'),
@@ -253,7 +253,8 @@ postprocess_mesh.renderOrder = 0;
 scene.add(postprocess_mesh)
 
 
-//console.log(heightmapMesh)
+heightmapMesh.material.needsUpdate = true;
+postprocess_mesh.material.needsUpdate = true;
 scene.add(heightmapMesh);
 
 //scene.add(foodMesh);
@@ -302,7 +303,7 @@ let materials = [
     diffuse_decay, update_agents, render_agents
 ]
 let resolution = new Vector2(w,h);
-materials.forEach( (mat)=>{mat.uniforms.resolution.value = resolution})
+materials.forEach( (mat)=>{mat.uniforms.resolution.value = resolution;})
 
 let start = Date.now();
 let time = 0;
@@ -313,12 +314,38 @@ raf()
 //////////////////////////////////////////////////
 
 let gui = new dat.GUI()
-gui.add(diffuse_decay.uniforms.decay, "value", 0.01, .99, .01).name("decay")
-gui.add(update_agents.uniforms.sa, "value", 1, 90, .1).name("sa")
-gui.add(update_agents.uniforms.ra, "value", 1, 90, .1).name("ra")
-gui.add(update_agents.uniforms.so, "value", 1, 90, .1).name("so")
-gui.add(update_agents.uniforms.ss, "value", 0.1, 10, .1).name("ss")
-gui.add(update_agents.uniforms.hl, "value", 0.01, 4, .001).name("hl")
-gui.add(controls, "random")
+gui.add(diffuse_decay.uniforms.decay, "value", 0.01, .99, .01).name("Decay Factor")
+gui.add(update_agents.uniforms.sa, "value", 1, 90, .1).name("Sensor Angle (sa)")
+gui.add(update_agents.uniforms.ra, "value", 1, 90, .1).name("Rotation Angle (ra)")
+gui.add(update_agents.uniforms.so, "value", 1, 90, .1).name("Scaling Factor (so)")
+gui.add(update_agents.uniforms.ss, "value", 0.1, 10, .1).name("Sensor Speed (ss)")
+gui.add(update_agents.uniforms.hl, "value", 0.00001, 1, .0001).name("Minimum Height Level for Movement").onChange((value) => {
+    //update_agents.uniforms.hl = value
+})
+gui.add(controls, "random").name("Spawn at center")
 gui.add(controls, "radius",.001,.25)
 gui.add(controls, "count", 1,size*size, 1)
+
+let heightmapOption = {
+    heightmap: "georgia"
+}
+let heightmaps = {
+    georgia: "heightmaps/georgia.png",
+    florida: "heightmaps/florida.png",
+    balkans: "heightmaps/balkans.png",
+    sanfranscisco_bay: "heightmaps/sanfranscisco_bay.png",
+    germany: "heightmaps/germany.png",
+}
+gui.add(heightmapOption, "heightmap", heightmaps).name("Heightmap").onChange((value) => {
+    let heightmapTexture = new TextureLoader().load( value );
+    heightmapTexture.wrapT = RepeatWrapping;
+    heightmapTexture.repeat.y = - 1;
+    let heightmapMaterial = new MeshBasicMaterial( {
+        map: heightmapTexture,
+        transparent: true,
+        opacity: 0.6,
+     } );
+    heightmapMesh.material = heightmapMaterial;
+    update_agents.uniforms.heightmap_texture.value = heightmapTexture;
+    postprocess.uniforms.heightmap_texture.value = heightmapTexture;
+})

@@ -96,8 +96,8 @@ export default class Controls {
         let id;
         for (let i = 0; i < max; i++) {
             id = i * 4
-            arr[id++] = Math.random(); // y
-            arr[id++] = Math.random(); // x
+            arr[id++] = 0.5 // y
+            arr[id++] = 0.5 // x
             arr[id++] = Math.random(); // angle
         }
         this.renderer.copyTextureToTexture(new Vector2(0, 0), tex, tex);

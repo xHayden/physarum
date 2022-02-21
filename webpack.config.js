@@ -1,6 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
-
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const index = "index";
 
 module.exports = {
@@ -33,5 +33,12 @@ module.exports = {
         compress: true,
         port: 9000
     },
-    mode: 'development'
+    mode: 'development',
+    plugins: [
+        new CopyWebpackPlugin(
+            [
+                { from: 'public' }
+            ]
+        )
+    ]
 };

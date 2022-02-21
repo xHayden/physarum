@@ -40,7 +40,7 @@ bool checkHeightTooLarge(vec2 src, vec2 val) {
     vec4 new_loc = texture2D(heightmap_texture, fract(val)); // uv is the new location
     vec4 old_loc = texture2D(heightmap_texture, fract(src)); // uv is the new location
     vec4 diff = abs(new_loc - old_loc);
-    return (diff.r < (hl/1000.));
+    return !(diff.r < (hl)); // 0.005 in canvas
 }
 
 varying vec2 vUv;
